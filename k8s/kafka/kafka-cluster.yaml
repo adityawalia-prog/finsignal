@@ -1,0 +1,59 @@
+apiVersion: kafka.strimzi.io/v1
+kind: Kafka
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kafka.strimzi.io/v1","kind":"Kafka","metadata":{"annotations":{"strimzi.io/kraft":"enabled","strimzi.io/node-pools":"enabled"},"name":"finsignal-kafka","namespace":"kafka"},"spec":{"entityOperator":{"topicOperator":{}},"kafka":{"config":{"offsets.topic.replication.factor":1,"transaction.state.log.min.isr":1,"transaction.state.log.replication.factor":1},"listeners":[{"name":"plain","port":9092,"tls":false,"type":"internal"}],"metadataVersion":"4.1-IV0","version":"4.1.0"}}}
+    strimzi.io/kraft: enabled
+    strimzi.io/node-pools: enabled
+  creationTimestamp: "2026-06-03T19:04:33Z"
+  generation: 1
+  name: finsignal-kafka
+  namespace: kafka
+  resourceVersion: "6354"
+  uid: 7bf71965-e841-4097-b05e-7c42e8ccdbdf
+spec:
+  entityOperator:
+    topicOperator: {}
+  kafka:
+    config:
+      offsets.topic.replication.factor: 1
+      transaction.state.log.min.isr: 1
+      transaction.state.log.replication.factor: 1
+    listeners:
+    - name: plain
+      port: 9092
+      tls: false
+      type: internal
+    metadataVersion: 4.1-IV0
+    version: 4.1.0
+status:
+  clusterId: 2EUR8QjWR02U0LM99EP0cw
+  conditions:
+  - lastTransitionTime: "2026-06-03T19:06:08.146783691Z"
+    message: A Kafka cluster with a single broker node and ephemeral storage will
+      lose topic messages after any restart or rolling update.
+    reason: KafkaStorage
+    status: "True"
+    type: Warning
+  - lastTransitionTime: "2026-06-03T19:06:08.146897942Z"
+    message: A Kafka cluster with a single controller node and ephemeral storage will
+      lose data after any restart or rolling update.
+    reason: KafkaStorage
+    status: "True"
+    type: Warning
+  - lastTransitionTime: "2026-06-03T19:07:00.007642962Z"
+    status: "True"
+    type: Ready
+  kafkaMetadataVersion: 4.1-IV0
+  kafkaNodePools:
+  - name: dual-role
+  kafkaVersion: 4.1.0
+  listeners:
+  - addresses:
+    - host: finsignal-kafka-kafka-bootstrap.kafka.svc
+      port: 9092
+    bootstrapServers: finsignal-kafka-kafka-bootstrap.kafka.svc:9092
+    name: plain
+  observedGeneration: 1
+  operatorLastSuccessfulVersion: 1.0.0

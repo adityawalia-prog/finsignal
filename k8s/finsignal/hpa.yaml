@@ -1,0 +1,53 @@
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"autoscaling/v2","kind":"HorizontalPodAutoscaler","metadata":{"annotations":{},"name":"scorer-hpa","namespace":"finsignal"},"spec":{"maxReplicas":6,"metrics":[{"resource":{"name":"cpu","target":{"averageUtilization":60,"type":"Utilization"}},"type":"Resource"}],"minReplicas":2,"scaleTargetRef":{"apiVersion":"apps/v1","kind":"Deployment","name":"scorer"}}}
+  creationTimestamp: "2026-06-03T19:23:21Z"
+  name: scorer-hpa
+  namespace: finsignal
+  resourceVersion: "52805"
+  uid: a16aee5d-77e5-495e-bc14-0795fbe3e0e5
+spec:
+  maxReplicas: 6
+  metrics:
+  - resource:
+      name: cpu
+      target:
+        averageUtilization: 60
+        type: Utilization
+    type: Resource
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: scorer
+status:
+  conditions:
+  - lastTransitionTime: "2026-06-26T18:26:00Z"
+    message: recommended size matches current size
+    reason: ReadyForNewScale
+    status: "True"
+    type: AbleToScale
+  - lastTransitionTime: "2026-06-25T20:30:19Z"
+    message: the HPA was able to successfully calculate a replica count from cpu resource
+      utilization (percentage of request)
+    reason: ValidMetricFound
+    status: "True"
+    type: ScalingActive
+  - lastTransitionTime: "2026-06-25T20:36:47Z"
+    message: the desired replica count is less than the minimum replica count
+    reason: TooFewReplicas
+    status: "True"
+    type: ScalingLimited
+  currentMetrics:
+  - resource:
+      current:
+        averageUtilization: 3
+        averageValue: 3m
+      name: cpu
+    type: Resource
+  currentReplicas: 2
+  desiredReplicas: 2
+  lastScaleTime: "2026-06-25T20:35:17Z"

@@ -1,0 +1,116 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: postgres
+      meta.helm.sh/release-namespace: finsignal
+    creationTimestamp: "2026-06-03T16:37:36Z"
+    labels:
+      app.kubernetes.io/component: primary
+      app.kubernetes.io/instance: postgres
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/version: 18.4.0
+      helm.sh/chart: postgresql-18.7.0
+    name: postgres-postgresql
+    namespace: finsignal
+    resourceVersion: "943"
+    uid: f07b5947-1a5a-4f0f-b069-4382d62a5041
+  spec:
+    clusterIP: 10.43.134.45
+    clusterIPs:
+    - 10.43.134.45
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: tcp-postgresql
+      port: 5432
+      protocol: TCP
+      targetPort: tcp-postgresql
+    selector:
+      app.kubernetes.io/component: primary
+      app.kubernetes.io/instance: postgres
+      app.kubernetes.io/name: postgresql
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      meta.helm.sh/release-name: postgres
+      meta.helm.sh/release-namespace: finsignal
+    creationTimestamp: "2026-06-03T16:37:36Z"
+    labels:
+      app.kubernetes.io/component: primary
+      app.kubernetes.io/instance: postgres
+      app.kubernetes.io/managed-by: Helm
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/version: 18.4.0
+      helm.sh/chart: postgresql-18.7.0
+    name: postgres-postgresql-hl
+    namespace: finsignal
+    resourceVersion: "944"
+    uid: 13135929-f0f5-4c01-8ddc-fcb7245fe479
+  spec:
+    clusterIP: None
+    clusterIPs:
+    - None
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: tcp-postgresql
+      port: 5432
+      protocol: TCP
+      targetPort: tcp-postgresql
+    publishNotReadyAddresses: true
+    selector:
+      app.kubernetes.io/component: primary
+      app.kubernetes.io/instance: postgres
+      app.kubernetes.io/name: postgresql
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/last-applied-configuration: |
+        {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"labels":{"app":"scorer"},"name":"scorer","namespace":"finsignal"},"spec":{"ports":[{"name":"http","port":8000,"targetPort":8000}],"selector":{"app":"scorer"}}}
+    creationTimestamp: "2026-06-03T19:51:42Z"
+    labels:
+      app: scorer
+    name: scorer
+    namespace: finsignal
+    resourceVersion: "9748"
+    uid: 407a0d0d-dd7d-4664-900a-f5eddc9b3a05
+  spec:
+    clusterIP: 10.43.74.221
+    clusterIPs:
+    - 10.43.74.221
+    internalTrafficPolicy: Cluster
+    ipFamilies:
+    - IPv4
+    ipFamilyPolicy: SingleStack
+    ports:
+    - name: http
+      port: 8000
+      protocol: TCP
+      targetPort: 8000
+    selector:
+      app: scorer
+    sessionAffinity: None
+    type: ClusterIP
+  status:
+    loadBalancer: {}
+kind: List
+metadata:
+  resourceVersion: ""
