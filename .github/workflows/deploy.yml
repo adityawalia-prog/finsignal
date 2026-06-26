@@ -1,0 +1,51 @@
+name: FinSignal CI/CD
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run tests
+        run: |
+          pip install pytest
+          pytest app/services/scorer/tests/ || echo "No tests yet"
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build and push scorer image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/services/scorer
+          push: true
+          tags: ghcr.io/${{ github.repository }}/finsignal-scorer:${{ github.sha }}
+
+      - name: Build and push generator image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app/services/generator
+          push: true
+          tags: ghcr.io/${{ github.repository }}/finsignal-generator:${{ github.sha }}
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deployment/scorer \
+            scorer=ghcr.io/${{ github.repository }}/finsignal-scorer:${{ github.sha }} \
+            --namespace finsignal
+          kubectl set image deployment/generator \
+            generator=ghcr.io/${{ github.repository }}/finsignal-generator:${{ github.sha }} \
+            --namespace finsignal

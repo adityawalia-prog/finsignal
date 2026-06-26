@@ -1,3 +1,10 @@
 *.log
 .env
 secrets/
+terraform/.terraform/
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup
+*.tar
+__pycache__/
+*.pyc
+.pytest_cache/

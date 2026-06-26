@@ -1,0 +1,6 @@
+confluent-kafka
+fastapi
+uvicorn
+scikit-learn
+psycopg2-binary
+prometheus-client
