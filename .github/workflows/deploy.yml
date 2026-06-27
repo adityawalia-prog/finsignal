@@ -7,9 +7,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      scorer_image: ${{ steps.meta.outputs.scorer_image }}
-      generator_image: ${{ steps.meta.outputs.generator_image }}
 
     steps:
       - uses: actions/checkout@v4
@@ -48,12 +45,6 @@ jobs:
           push: true
           tags: ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:${{ github.sha }}
 
-      - name: Export image tags
-        id: meta
-        run: |
-          echo "scorer_image=ghcr.io/${{ env.REPO_LOWER }}/finsignal-scorer:${{ github.sha }}" >> $GITHUB_OUTPUT
-          echo "generator_image=ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:${{ github.sha }}" >> $GITHUB_OUTPUT
-
   deploy:
     runs-on: self-hosted
     needs: build
@@ -68,7 +59,17 @@ jobs:
       - name: Set lowercase repo name
         run: echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      - name: Pull images into k3d cluster
+      - name: Log in to GHCR on self-hosted runner
+        run: |
+          echo "${{ secrets.GHCR_TOKEN }}" | \
+          docker login ghcr.io -u adityawalia-prog --password-stdin
+
+      - name: Pull images from GHCR to local Docker
+        run: |
+          docker pull ghcr.io/${{ env.REPO_LOWER }}/finsignal-scorer:${{ github.sha }}
+          docker pull ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:${{ github.sha }}
+
+      - name: Import images into k3d cluster
         run: |
           k3d image import \
             ghcr.io/${{ env.REPO_LOWER }}/finsignal-scorer:${{ github.sha }} \
