@@ -4,13 +4,13 @@ on:
   push:
     branches: [main]
 
-env:
-  REGISTRY: ghcr.io
-  REPO: ${{ github.repository }}
-
 jobs:
-  build-and-deploy:
+  build:
     runs-on: ubuntu-latest
+    outputs:
+      scorer_image: ${{ steps.meta.outputs.scorer_image }}
+      generator_image: ${{ steps.meta.outputs.generator_image }}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -48,9 +48,52 @@ jobs:
           push: true
           tags: ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:${{ github.sha }}
 
-      - name: Update deployment images
+      - name: Export image tags
+        id: meta
         run: |
-          echo "Images built and pushed successfully:"
-          echo "  ghcr.io/${{ env.REPO_LOWER }}/finsignal-scorer:${{ github.sha }}"
-          echo "  ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:${{ github.sha }}"
-          echo "Note: kubectl deploy step requires self-hosted runner with k3d access"
+          echo "scorer_image=ghcr.io/${{ env.REPO_LOWER }}/finsignal-scorer:${{ github.sha }}" >> $GITHUB_OUTPUT
+          echo "generator_image=ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:${{ github.sha }}" >> $GITHUB_OUTPUT
+
+  deploy:
+    runs-on: self-hosted
+    needs: build
+
+    steps:
+      - name: Set context to finsignal cluster
+        run: kubectl config use-context k3d-finsignal
+
+      - name: Verify cluster is reachable
+        run: kubectl get nodes
+
+      - name: Set lowercase repo name
+        run: echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Pull images into k3d cluster
+        run: |
+          k3d image import \
+            ghcr.io/${{ env.REPO_LOWER }}/finsignal-scorer:${{ github.sha }} \
+            -c finsignal
+          k3d image import \
+            ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:${{ github.sha }} \
+            -c finsignal
+
+      - name: Deploy scorer
+        run: |
+          kubectl set image deployment/scorer \
+            scorer=ghcr.io/${{ env.REPO_LOWER }}/finsignal-scorer:${{ github.sha }} \
+            --namespace finsignal
+          kubectl rollout status deployment/scorer \
+            --namespace finsignal --timeout=120s
+
+      - name: Deploy generator
+        run: |
+          kubectl set image deployment/generator \
+            generator=ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:${{ github.sha }} \
+            --namespace finsignal
+          kubectl rollout status deployment/generator \
+            --namespace finsignal --timeout=120s
+
+      - name: Verify deployments
+        run: |
+          kubectl get pods -n finsignal
+          echo "Deploy complete: ${{ github.sha }}"
