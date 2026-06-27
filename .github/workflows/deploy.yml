@@ -29,21 +29,26 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Set lowercase repo name
-        run: echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+        run: |
+          echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Build and push scorer image
         uses: docker/build-push-action@v5
         with:
           context: ./app/services/scorer
           push: true
-          tags: ghcr.io/${{ env.REPO_LOWER }}/finsignal-scorer:${{ github.sha }}
+          tags: |
+            ghcr.io/${{ env.REPO_LOWER }}/finsignal-scorer:${{ github.sha }}
+            ghcr.io/${{ env.REPO_LOWER }}/finsignal-scorer:latest
 
       - name: Build and push generator image
         uses: docker/build-push-action@v5
         with:
           context: ./app/services/generator
           push: true
-          tags: ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:${{ github.sha }}
+          tags: |
+            ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:${{ github.sha }}
+            ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:latest
 
   deploy:
     runs-on: self-hosted
@@ -57,17 +62,15 @@ jobs:
         run: kubectl get nodes
 
       - name: Set lowercase repo name
-        run: echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
-
-      - name: Log in to GHCR on self-hosted runner
         run: |
-          echo "${{ secrets.GHCR_TOKEN }}" | \
-          docker login ghcr.io -u adityawalia-prog --password-stdin
+          echo "REPO_LOWER=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      - name: Pull images from GHCR to local Docker
+      - name: Pull images using runner docker config
         run: |
-          docker pull ghcr.io/${{ env.REPO_LOWER }}/finsignal-scorer:${{ github.sha }}
-          docker pull ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:${{ github.sha }}
+          docker --config /home/awalia/.docker-runner pull \
+            ghcr.io/${{ env.REPO_LOWER }}/finsignal-scorer:${{ github.sha }}
+          docker --config /home/awalia/.docker-runner pull \
+            ghcr.io/${{ env.REPO_LOWER }}/finsignal-generator:${{ github.sha }}
 
       - name: Import images into k3d cluster
         run: |
